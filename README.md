@@ -61,6 +61,8 @@ chmod +x scripts/health_check.sh
 
 ### 빠른 테스트
 
+#### 1️⃣ curl로 테스트 (간단함)
+
 ```bash
 # 모델 목록 확인
 curl http://localhost:4444/models \
@@ -84,6 +86,62 @@ curl http://localhost:4444/v1/chat/completions \
     "messages": [{"role": "user", "content": "한국의 수도는?"}]
   }'
 ```
+
+#### 2️⃣ Python으로 테스트 (권장)
+
+**사전 요구사항:**
+
+```bash
+# 필요한 패키지 설치
+pip install openai langchain langchain-openai python-dotenv
+
+# 또는 requirements.txt에서 설치
+pip install -r requirements.txt
+```
+
+**Test 1: OpenAI SDK 직접 사용**
+
+```bash
+cd example
+python test_openai.py
+```
+
+**출력 예시:**
+```
+I'm doing well—thanks for asking! How can I help you today?
+```
+
+**Test 2: LangChain 사용 (Streaming + Chat)**
+
+```bash
+cd example
+python test_langchain_openai.py
+```
+
+**출력 예시:**
+```
+## 한국의 4계절(季節) 개요
+
+한국은 **고리성 대륙성 기후**와 **해양성 기후**가 복합적으로 섞여 있는 곳이기 때문에,
+4계절이 뚜렷하지만 지역에 따라 기온·강수량 차이가 큽니다. ...
+
+AIMessage(content='안녕하세요! 무엇을 도와드릴까요?', response_metadata={...})
+```
+
+**Python 예제 파일 위치:**
+
+```text
+example/
+├── test_openai.py             # OpenAI SDK 예제
+└── test_langchain_openai.py   # LangChain 예제
+```
+
+**사용 시 주의사항:**
+
+- LiteLLM API URL: `http://localhost:4444`
+- API Key: `sk-4444` (기본값)
+- 모델명: `gpt-oss-20b`, `tinyllama`, `bge-m3` 등
+- 기본 헤더 설정은 예제 파일에서 커스터마이징 가능
 
 ## 주요 기능
 
@@ -114,14 +172,34 @@ curl http://localhost:4444/v1/chat/completions \
 ### Makefile 명령어
 
 ```bash
-make up          # 전체 스택 시작
-make down        # 전체 스택 종료
-make restart     # 재시작
-make logs        # 로그 확인
-make ps          # 컨테이너 상태
-make health      # 헬스 체크
-make setup       # 모델 자동 설정
-make test        # 통합 테스트
+# 초기 설정
+make init              # .env 파일 + Volume 초기화
+
+# Docker 관리
+make up                # 전체 스택 시작
+make down              # 전체 스택 종료
+make restart           # 재시작
+make rebuild           # clean + up
+
+# 모델 관리
+make setup-models      # 모델 자동 설정 (GPU 감지)
+
+# 로깅 & 모니터링
+make logs              # 전체 로그
+make logs-follow       # 실시간 로그
+make ps                # 컨테이너 상태
+make health            # 헬스 체크 (상세 정보)
+
+# 컨테이너 접속
+make shell             # LiteLLM 셸 접속
+make shell-db          # Database 셸 접속
+make shell-ollama      # Ollama 셸 접속
+
+# 정리
+make clean             # 캐시 정리
+
+# 도움말
+make help              # 모든 명령어 확인
 ```
 
 ### 모델 관리
@@ -263,17 +341,29 @@ docker compose restart litellm
 
 ```text
 litellm-stack/
-├── docker-compose.yml          # 전체 스택 정의
-├── litellm_settings.yml        # LiteLLM 모델 설정
-├── .env.example                # 환경 변수 템플릿
-├── Makefile                    # 편의 명령어
-├── scripts/
-│   ├── setup_models.sh         # 모델 자동 설정
-│   └── health_check.sh         # 헬스 체크
-├── docs/
-│   └── architecture-litellm-ollama-final.md
-├── src/                        # Python 클라이언트 예제
-└── tests/                      # 테스트 스크립트
+├── docker-compose.yml              # 전체 스택 정의
+├── litellm_settings.yml            # LiteLLM 모델 설정
+├── .env.example                    # 환경 변수 템플릿
+├── Makefile                        # 편의 명령어 (make help 참조)
+│
+├── scripts/                        # 유틸리티 스크립트
+│   ├── setup_models.sh             # 모델 자동 설정 (GPU 감지)
+│   ├── health_check.sh             # 스택 헬스 체크
+│   ├── list_models.sh              # LiteLLM 모델 목록
+│   └── migrate.sh                  # Volume 마이그레이션
+│
+├── example/                        # Python 테스트 예제
+│   ├── test_openai.py              # OpenAI SDK 예제
+│   └── test_langchain_openai.py    # LangChain 예제
+│
+├── docs/                           # 상세 문서
+│   ├── architecture-litellm-ollama-final.md
+│   └── git-repository-strategy.md
+│
+├── src/                            # Python 클라이언트 코드
+│   └── run_langchain_agent.py      # LangChain Agent 예제
+│
+└── tests/                          # 통합 테스트
 ```
 
 ### 기여 방법
