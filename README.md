@@ -143,6 +143,92 @@ example/
 - 모델명: `gpt-oss-20b`, `tinyllama`, `bge-m3` 등
 - 기본 헤더 설정은 예제 파일에서 커스터마이징 가능
 
+#### 3️⃣ 통합 설정 검증 (전체 시스템 확인)
+
+```bash
+./scripts/test_setup.sh
+```
+
+**검증 항목:**
+
+```
+[1/5] Docker 컨테이너 상태 확인
+  ✓ LiteLLM 서비스 실행 중
+  ✓ Ollama 서비스 실행 중
+
+[2/5] LiteLLM 프록시 헬스체크
+  ✓ LiteLLM 프록시 응답 정상
+
+[3/5] 사용 가능한 모델 확인
+  ✓ Gemini 모델 등록됨
+  ✓ Ollama 로컬 모델 등록됨
+
+[4/5] Python 패키지 확인
+  ✓ langchain 설치됨
+  ✓ langchain-community 설치됨
+  ✓ litellm 설치됨
+
+[5/5] LiteLLM API 요청 테스트
+  ✓ API 요청 성공
+
+✓ 모든 테스트 완료!
+```
+
+#### 4️⃣ LangChain Agent 실행 (AI 에이전트 테스트)
+
+**준비:**
+
+```bash
+# 필요한 패키지 설치
+pip install -r requirements.txt
+
+# 또는 uv 사용
+uv sync
+```
+
+**실행:**
+
+```bash
+python example/test_langchain_agent.py
+```
+
+**출력 예시:**
+
+```
+Agent initialized with Ollama backend
+Agent: "Let me analyze this information..."
+
+Response: "Here's my analysis of the Korean cultural context..."
+
+Tool usage: Retrieved context from knowledge base
+Final answer: "Based on the information provided..."
+```
+
+**LangChain Agent 특징:**
+
+- 🤖 **자동 추론**: 복잡한 작업을 단계별로 해결
+- 🔗 **Tool 호출**: 필요시 자동으로 외부 API/도구 사용
+- 💭 **Chain-of-thought**: 추론 과정을 설명하며 진행
+- 📊 **상태 관리**: 이전 대화 컨텍스트 유지
+
+**테스트 워크플로우:**
+
+```bash
+# 1단계: 전체 시스템 설정 확인
+./scripts/test_setup.sh
+
+# 2단계: 간단한 API 호출 테스트
+cd example
+python test_openai.py          # OpenAI SDK 직접 사용
+python test_langchain_openai.py # LangChain 기본 사용
+
+# 3단계: LangChain Agent 테스트
+python test_langchain_agent.py  # 복잡한 추론 작업
+
+# 4단계: 성능 모니터링
+make health                      # 상세 시스템 상태 확인
+```
+
 ## 주요 기능
 
 ### 로컬 LLM 서빙
