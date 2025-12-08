@@ -42,7 +42,7 @@ help:
 	@echo -e "$(BLUE)━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━$(NC)"
 	@echo ""
 	@echo -e "$(GREEN)초기 설정:$(NC)"
-	@echo "  make init              🔧 .env 파일 초기화"
+	@echo "  make init              🔧 .env 파일 + Volume 초기화"
 	@echo ""
 	@echo -e "$(GREEN)Docker 관리:$(NC)"
 	@echo "  make up                🚀 전체 스택 시작"
@@ -89,6 +89,13 @@ init:
 		echo -e "$(GREEN)✅ .env 파일 생성 완료 (.env.example에서)$(NC)"; \
 	else \
 		echo -e "$(BLUE)ℹ️  .env 파일이 이미 있습니다 (초기화: rm .env && make init)$(NC)"; \
+	fi
+	@echo ""
+	@echo -e "$(YELLOW)🔄 Volume 마이그레이션 중...$(NC)"
+	@if [ -f scripts/migrate.sh ]; then \
+		bash scripts/migrate.sh; \
+	else \
+		echo -e "$(RED)❌ scripts/migrate.sh 파일이 없습니다$(NC)"; \
 	fi
 
 validate:

@@ -81,8 +81,10 @@ services:
 volumes:
   postgres_data:
     name: litellm_postgres_data
+    external: true
   ollama_data:
     name: litellm_ollama_data
+    external: true
 
 networks:
   default:

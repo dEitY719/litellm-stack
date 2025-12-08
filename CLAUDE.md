@@ -25,6 +25,30 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 📅 Recent Work History (2025-12-08)
 
+### Latest Updates (Post-Integration)
+
+**Fixes Applied:**
+
+1. **setup_models.sh VRAM threshold fix**
+   - Changed from 16GB to 14GB (more realistic for gpt-oss:20b)
+   - Allows 15GB VRAM systems to run high-spec models
+   - Reference: User feedback on false "low-spec" detection
+
+2. **Volume External Reference**
+   - docker-compose.yml volumes now marked as `external: true`
+   - Allows graceful migration from previous `litellm` project
+   - Prevents "volume already exists" warnings
+
+3. **Migration Script**
+   - New `scripts/migrate.sh` for volume initialization
+   - Automatically creates missing Docker volumes
+   - Integrated into `make init` workflow
+
+4. **Makefile Enhancement**
+   - `make init` now includes volume migration
+   - Better help message formatting
+   - Updated from slea-ssem reference style
+
 ### Project Consolidation
 
 **Previous State:**
