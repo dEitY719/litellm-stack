@@ -139,35 +139,42 @@ New structure completed:
 
 ```
 litellm-stack/
-├── .git/                           # Git repository
-├── .env.example                    # Environment variables template
-├── .gitignore
-├── README.md                       # Main documentation
+├── AGENTS.md                       # Repository governance & agent notes
 ├── CLAUDE.md                       # This file
-├── AGENTS.md                       # Repository governance
 ├── CODE_REVIEW.md                  # Code review guidelines
+├── README.md                       # Main documentation / runbook
 ├── USAGE.md                        # Usage guide
-│
-├── docker-compose.yml              # ✅ Unified stack (ollama + litellm + db)
-├── litellm_settings.yml            # ✅ Model routing with ollama:11434
-├── Makefile                        # Convenience commands
-│
-├── docs/                           # Comprehensive documentation
-│   ├── architecture-litellm-ollama-final.md  # Architecture decisions
-│   └── git-repository-strategy.md            # Repository strategy
-│
-├── scripts/                        # ✅ Setup and monitoring scripts
-│   ├── setup_models.sh             # ✅ Auto model setup (GPU detection)
-│   └── health_check.sh             # ✅ Full stack health check
-│
-├── src/                            # Python examples
-│   └── run_langchain_agent.py      # LangChain agent example
-│
-├── tests/                          # Test scripts (to be created)
-│
-├── pyproject.toml                  # Python dependencies
-├── requirements.txt
-└── uv.lock                         # Python lock file
+├── docker-compose.yml              # Unified stack (ollama + litellm + db)
+├── litellm_settings.yml            # Model routing config for LiteLLM proxy
+├── Makefile                        # Compose and helper commands
+├── .env.example                    # Environment variable template
+├── .env                            # Local environment (gitignored)
+├── .dockerignore
+├── .gitignore
+├── .python-version                 # Python version pin
+├── pyproject.toml                  # Python tooling config
+├── requirements.txt                # Runtime dependencies
+├── tox.ini                         # Tox/ruff/mypy config
+├── uv.lock                         # Python lock file
+├── docs/                           # Architecture and repo strategy docs
+│   ├── architecture-litellm-ollama-final.md
+│   └── git-repository-strategy.md
+├── example/                        # Python examples for hitting the proxy
+│   ├── test_langchain_agent.py
+│   ├── test_langchain_openai.py
+│   └── test_openai.py
+├── scripts/                        # Stack setup and smoke-test scripts
+│   ├── health_check.sh
+│   ├── list_models.sh
+│   ├── migrate.sh
+│   ├── setup_models.sh
+│   └── test_setup.sh
+├── tools/                          # Placeholder for future tooling
+├── .claude/                        # Local Claude configuration
+├── .tox/                           # Virtualenv for lint/test runs
+├── .mypy_cache/                    # Generated mypy cache
+├── .ruff_cache/                    # Generated ruff cache
+└── .markdownlint.json              # Markdown lint rules
 ```
 
 ---

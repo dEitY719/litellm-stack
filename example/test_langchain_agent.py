@@ -27,6 +27,7 @@ SYSTEM_PROMPT = (
     "3) 모든 도구 결과를 요약하고 출처를 명시한 뒤 한국어로 답변합니다."
 )
 
+
 def create_agent_with_gemini() -> Optional[Runnable]:
     """LangGraph 기반 OpenAI 호환 에이전트를 구성하고 그래프를 반환합니다."""
 
@@ -42,7 +43,11 @@ def create_agent_with_gemini() -> Optional[Runnable]:
         )
 
         print("[*] 검색 도구 초기화 중...")
-        tools = [DuckDuckGoSearchRun(name="duckduckgo-search", description="최신 웹 정보를 찾습니다.")]
+        tools = [
+            DuckDuckGoSearchRun(
+                name="duckduckgo-search", description="최신 웹 정보를 찾습니다."
+            )
+        ]
 
         print("[*] LangGraph 기반 에이전트 그래프 생성 중...")
         agent_graph = create_agent(
@@ -87,7 +92,10 @@ def run_agent(agent_graph: Runnable, question: str) -> bool:
         return True
 
     except Exception as e:
-        print(f"\n[✗] 에이전트 실행 중 오류 발생: {type(e).__name__}: {e}", file=sys.stderr)
+        print(
+            f"\n[✗] 에이전트 실행 중 오류 발생: {type(e).__name__}: {e}",
+            file=sys.stderr,
+        )
         print(
             "[!] 다음을 확인하세요:\n"
             "    1. 프록시 로그: docker compose logs -f litellm\n"

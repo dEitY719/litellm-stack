@@ -134,6 +134,7 @@ AIMessage(content='안녕하세요! 무엇을 도와드릴까요?', response_met
 example/
 ├── test_openai.py             # OpenAI SDK 예제
 └── test_langchain_openai.py   # LangChain 예제
+└── test_langchain_agent.py    # Agent 예제
 ```
 
 **사용 시 주의사항:**

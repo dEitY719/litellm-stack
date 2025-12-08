@@ -1,7 +1,7 @@
 [project]
-name = "litellm-langchain-agent"
+name = "litellm-stack"
 version = "0.1.0"
-description = "A simple LangChain agent using litellm."
+description = "Monorepo for efficiently orchestrating LiteLLM and Ollama in one stack."
 dependencies = [
     "langchain",
     "langchain-community",

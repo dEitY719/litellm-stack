@@ -961,7 +961,7 @@ wheels = [
 ]
 
 [[package]]
-name = "litellm-langchain-agent"
+name = "litellm-stack"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
