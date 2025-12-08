@@ -15,10 +15,10 @@ SHELL := /bin/bash
 PROJECT_NAME := litellm-stack
 DC := $(shell command -v docker-compose >/dev/null 2>&1 && echo docker-compose || echo "docker compose")
 
-# Service names
+# Service names (from docker-compose.yml)
 OLLAMA := ollama
 LITELLM := litellm
-DB := litellm_db
+DB := db
 
 # URLs and credentials
 LITELLM_URL := http://localhost:4444
@@ -189,15 +189,15 @@ health: validate
 	fi
 	@echo ""
 	@echo -e "$(YELLOW)3️⃣  Database (localhost:5431)$(NC)"
-	@if $(DC) exec $(DB) pg_isready -U llmproxy -d litellm > /dev/null 2>&1; then \
+	@if $(DC) exec -T $(DB) pg_isready -U llmproxy -d litellm > /dev/null 2>&1; then \
 		echo -e "$(GREEN)   ✅ Database 정상$(NC)"; \
 	else \
-		echo -e "$(RED)   ❌ Database 응답 없음$(NC)"; \
+		echo -e "$(RED)   ❌ Database 응답 없음 (docker compose exec 확인)$(NC)"; \
 	fi
 	@echo ""
 	@echo -e "$(YELLOW)4️⃣  GPU 상태$(NC)"
-	@if $(DC) exec $(OLLAMA) nvidia-smi > /dev/null 2>&1; then \
-		$(DC) exec $(OLLAMA) nvidia-smi --query-gpu=index,name,utilization.gpu,memory.used,memory.total --format=csv,noheader 2>/dev/null || echo "   ⚠️  GPU 정보 조회 실패"; \
+	@if $(DC) exec -T $(OLLAMA) nvidia-smi > /dev/null 2>&1; then \
+		$(DC) exec -T $(OLLAMA) nvidia-smi --query-gpu=index,name,utilization.gpu,memory.used,memory.total --format=csv,noheader 2>/dev/null || echo "   ⚠️  GPU 정보 조회 실패"; \
 	else \
 		echo -e "$(BLUE)   ⚠️  GPU 미사용 또는 미감지$(NC)"; \
 	fi
@@ -235,7 +235,7 @@ shell:
 	$(DC) exec -it $(LITELLM) /bin/bash
 
 shell-db:
-	@echo -e "$(YELLOW)💻 Database 접속$(NC)"
+	@echo -e "$(YELLOW)💻 Database 접속 (litellm_db)$(NC)"
 	$(DC) exec -it $(DB) psql -U llmproxy -d litellm
 
 shell-ollama:
