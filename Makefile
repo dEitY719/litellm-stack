@@ -182,8 +182,12 @@ health: validate
 	@echo -e "$(YELLOW)2️⃣  LiteLLM ($(LITELLM_URL))$(NC)"
 	@if curl -sf $(LITELLM_URL)/health/liveliness > /dev/null 2>&1; then \
 		echo -e "$(GREEN)   ✅ LiteLLM 프록시 정상$(NC)"; \
-		MODEL_COUNT=$$(curl -s $(LITELLM_URL)/models -H "Authorization: Bearer $(LITELLM_API_KEY)" 2>/dev/null | jq '.data | length' 2>/dev/null || echo "?"); \
-		echo -e "$(BLUE)   등록된 모델: $$MODEL_COUNT$(NC)"; \
+		if [ -f scripts/list_models.sh ]; then \
+			bash scripts/list_models.sh; \
+		else \
+			MODEL_COUNT=$$(curl -s $(LITELLM_URL)/models -H "Authorization: Bearer $(LITELLM_API_KEY)" 2>/dev/null | jq '.data | length' 2>/dev/null || echo "?"); \
+			echo -e "$(BLUE)   등록된 모델: $$MODEL_COUNT$(NC)"; \
+		fi \
 	else \
 		echo -e "$(RED)   ❌ LiteLLM 프록시 응답 없음$(NC)"; \
 	fi
