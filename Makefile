@@ -5,7 +5,7 @@
 
 SHELL := /bin/bash
 .ONESHELL:
-.PHONY: help init up down logs logs-follow ps health restart setup-models health-check shell shell-db shell-ollama clean rebuild validate
+.PHONY: help init up down logs logs-follow ps health restart setup-models health-check shell shell-db shell-ollama clean rebuild validate gpu-status gpu-info
 .SILENT:
 
 # ============================================================
@@ -52,6 +52,10 @@ help:
 	@echo ""
 	@echo -e "$(GREEN)LLM 모델 관리:$(NC)"
 	@echo "  make setup-models      📥 모델 자동 설정 (GPU 감지)"
+	@echo ""
+	@echo -e "$(GREEN)GPU 관리:$(NC)"
+	@echo "  make gpu-status        🎮 GPU 상세 상태 (WSL2 최적화)"
+	@echo "  make gpu-info          🎮 GPU 간략 정보"
 	@echo ""
 	@echo -e "$(GREEN)로깅 & 모니터링:$(NC)"
 	@echo "  make logs              📊 로그 조회"
@@ -199,11 +203,22 @@ health: validate
 		echo -e "$(RED)   ❌ Database 응답 없음 (docker compose exec 확인)$(NC)"; \
 	fi
 	@echo ""
-	@echo -e "$(YELLOW)4️⃣  GPU 상태$(NC)"
-	@if $(DC) exec -T $(OLLAMA) nvidia-smi > /dev/null 2>&1; then \
-		$(DC) exec -T $(OLLAMA) nvidia-smi --query-gpu=index,name,utilization.gpu,memory.used,memory.total --format=csv,noheader 2>/dev/null || echo "   ⚠️  GPU 정보 조회 실패"; \
+	@echo -e "$(YELLOW)4️⃣  GPU 상태 (간략)$(NC)"
+	@LATEST_OFFLOAD=$$(docker logs $(OLLAMA) 2>&1 | grep "offloaded.*layers" | tail -1 | grep -oP 'offloaded \K\d+/\d+' 2>/dev/null || echo "N/A"); \
+	if [ "$$LATEST_OFFLOAD" != "N/A" ]; then \
+		if [[ "$$LATEST_OFFLOAD" == 0/* ]]; then \
+			echo -e "$(RED)   ⚠ GPU 레이어 오프로드: $$LATEST_OFFLOAD (CPU 모드!)$(NC)"; \
+			echo -e "$(BLUE)   → 상세 진단: make gpu-status$(NC)"; \
+		else \
+			echo -e "$(GREEN)   ✓ GPU 레이어 오프로드: $$LATEST_OFFLOAD$(NC)"; \
+		fi; \
 	else \
-		echo -e "$(BLUE)   ⚠️  GPU 미사용 또는 미감지$(NC)"; \
+		GPU_MEM=$$(docker logs $(OLLAMA) 2>&1 | grep "gpu memory" | tail -1 | grep -oP 'available="\K[^"]+' 2>/dev/null || echo ""); \
+		if [ -n "$$GPU_MEM" ]; then \
+			echo -e "$(GREEN)   ✓ GPU 인식됨 ($$GPU_MEM VRAM)$(NC)"; \
+		else \
+			echo -e "$(BLUE)   ⚠ GPU 미사용 또는 모델 미로드$(NC)"; \
+		fi; \
 	fi
 	@echo ""
 	@echo -e "$(BLUE)━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━$(NC)"
@@ -260,6 +275,47 @@ clean:
 	@echo -e "$(BLUE)   • Docker 불필요한 이미지...$(NC)"
 	docker image prune -f 2>/dev/null || true
 	@echo -e "$(GREEN)✅ 캐시 정리 완료$(NC)"
+
+# ============================================================
+# 7. GPU 관리
+# ============================================================
+
+gpu-status:
+	@echo -e "$(YELLOW)🎮 GPU 상태 확인 (WSL2 최적화)$(NC)"
+	@if [ -f scripts/gpu_status.sh ]; then \
+		bash scripts/gpu_status.sh; \
+	else \
+		echo -e "$(RED)❌ scripts/gpu_status.sh 파일이 없습니다$(NC)"; \
+		exit 1; \
+	fi
+
+gpu-info:
+	@echo -e "$(BLUE)━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━$(NC)"
+	@echo -e "$(BLUE)GPU 하드웨어 정보 (요약)$(NC)"
+	@echo -e "$(BLUE)━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━$(NC)"
+	@echo ""
+	@echo -e "$(YELLOW)WSL2 호스트 GPU:$(NC)"
+	@if [ -x /usr/lib/wsl/lib/nvidia-smi ]; then \
+		/usr/lib/wsl/lib/nvidia-smi --query-gpu=index,name,memory.total --format=csv,noheader 2>/dev/null | \
+			awk -F, '{printf "  [GPU %s] %s (%s VRAM)\n", $$1, $$2, $$3}'; \
+	else \
+		echo -e "$(YELLOW)  ⚠ GPU 미감지 또는 nvidia-smi 없음$(NC)"; \
+	fi
+	@echo ""
+	@echo -e "$(YELLOW)Ollama GPU 레이어 오프로드:$(NC)"
+	@LATEST_OFFLOAD=$$(docker logs $(OLLAMA) 2>&1 | grep "offloaded.*layers" | tail -1 | grep -oP 'offloaded \K\d+/\d+' 2>/dev/null || echo "N/A"); \
+	if [ "$$LATEST_OFFLOAD" != "N/A" ]; then \
+		if [[ "$$LATEST_OFFLOAD" == 0/* ]]; then \
+			echo -e "$(RED)  ⚠ $$LATEST_OFFLOAD (CPU 모드)$(NC)"; \
+		else \
+			echo -e "$(GREEN)  ✓ $$LATEST_OFFLOAD layers$(NC)"; \
+		fi; \
+	else \
+		echo -e "$(BLUE)  - 아직 모델 로드 안됨$(NC)"; \
+	fi
+	@echo ""
+	@echo -e "$(BLUE)상세 정보: make gpu-status$(NC)"
+	@echo ""
 
 # ============================================================
 # Default target
