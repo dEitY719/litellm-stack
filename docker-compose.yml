@@ -41,6 +41,11 @@ services:
       # 값: 1 (활성화), 0 (비활성화)
       # 참고: Ampere 이상 GPU에서 지원 (RTX 30xx, 40xx, 50xx)
       OLLAMA_FLASH_ATTENTION: "1"
+
+      # GPU 레이어 오프로드 수 (CUDA 병렬화)
+      # 값: 자동 감지 또는 명시적 수 (0-128)
+      # 권장: 25 (RTX 5070 Ti 기본값)
+      OLLAMA_NUM_GPU: "25"
     deploy:
       resources:
         reservations:
