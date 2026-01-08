@@ -21,7 +21,7 @@ Unified Docker Compose stack to run **Ollama** (local LLM inference) + **LiteLLM
 ### 1. Clone & Configure
 
 ```bash
-git clone https://github.com/dev-404/litellm-stack
+git clone https://github.com/dev-team-404/litellm-stack
 cd litellm-stack
 
 # Copy example env (add API keys if needed)
