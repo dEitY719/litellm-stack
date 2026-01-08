@@ -22,12 +22,14 @@ make health  # Should show all services healthy
 ### Making Changes
 
 1. **Test locally** before committing
+
    ```bash
    docker compose up -d
    docker compose logs -f  # Monitor for errors
    ```
 
 2. **Run checks**
+
    ```bash
    tox -e ruff       # Python linting
    tox -e mypy       # Type checking
@@ -36,6 +38,7 @@ make health  # Should show all services healthy
    ```
 
 3. **Test Python examples** (if modified)
+
    ```bash
    pip install -r requirements.txt
    python example/test_openai.py
