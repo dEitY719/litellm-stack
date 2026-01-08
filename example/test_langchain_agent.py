@@ -33,8 +33,11 @@ def create_agent_with_gemini() -> Optional[Runnable]:
 
     try:
         print("[*] LiteLLM 프록시에서 모델 초기화 중 (OpenAI 호환 API)...")
+        # NOTE: Gemini SSL 연결 문제로 인해 로컬 Ollama 모델 사용
+        # tinyllama: 빠르고 경량이며 도구 호출 지원 (추천)
+        # gpt-oss-20b: 더 강력하지만 tool_calls 처리 문제 있음
         llm = ChatOpenAI(
-            model="gemini-2.5-flash-lite",
+            model="tinyllama",
             api_key="sk-4444",
             base_url="http://localhost:4444/v1",
             temperature=0.7,

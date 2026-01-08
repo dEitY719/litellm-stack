@@ -36,6 +36,7 @@ docker compose up -d
 ```
 
 This starts:
+
 - **Ollama** (port 11434) — local LLM serving with GPU acceleration
 - **LiteLLM** (port 4444) — OpenAI-compatible proxy
 - **PostgreSQL** (port 5431) — stores config and usage logs
@@ -68,9 +69,11 @@ curl http://localhost:4444/v1/chat/completions \
 Models are auto-configured on first run. The setup script detects your hardware:
 
 **Low-spec** (< 8GB VRAM):
+
 - `tinyllama` — ~50MB, fast inference
 
 **High-spec** (8GB+ VRAM):
+
 - `tinyllama` — fast for testing
 - `gpt-oss:20b` — powerful 20B parameter model (~11GB VRAM)
 - `bge-m3` — embedding model for search tasks

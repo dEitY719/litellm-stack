@@ -12,7 +12,7 @@ credential_key = os.getenv("X_DEP_TICKET")
 
 llm = ChatOpenAI(
     base_url=api_base_url,
-    model="gpt-oss:20b",
+    model="gpt-oss-20b",
     default_headers={
         "x-dep-ticket": credential_key,
         "Send-System-Name": os.getenv("SEND_SYSTEM_NAME"),

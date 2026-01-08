@@ -23,7 +23,7 @@ client = OpenAI(
 )
 
 completion = client.chat.completions.create(
-    model="gpt-oss:20b",
+    model="gpt-oss-20b",
     messages=[
         {"role": "system", "content": "You are a helpful assistant."},
         {"role": "user", "content": "How are you?"},
