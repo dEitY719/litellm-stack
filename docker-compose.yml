@@ -121,4 +121,5 @@ volumes:
 
 networks:
   default:
-    name: litellm-network  
+    name: litellm-network
+    external: true  
