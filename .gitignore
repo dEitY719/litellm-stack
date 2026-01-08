@@ -1,6 +1,5 @@
 .vscode/
-.env
 .venv/
 __pycache__/
 .mypy_cache/
-litellm_stack.egg-info/
+litellm_stack.egg-info/.env.local
