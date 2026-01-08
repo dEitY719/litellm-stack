@@ -52,11 +52,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ### Project Consolidation
 
 **Previous State:**
+
 - `devnet_env_setup/` - Ollama setup project (separate repo)
 - `litellm/` - LiteLLM gateway project (separate repo)
 - 2 docker-compose.yml files (separate management)
 
 **Current State (Unified):**
+
 - `litellm-stack/` - Single Monorepo
 - Single docker-compose.yml for entire stack
 - tinyllama1 merged into main ollama service
@@ -71,7 +73,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
    - Reference: `docs/architecture-litellm-ollama-final.md`
 
 2. **Repository Strategy: Monorepo**
-   - Single GitHub repository: https://github.com/dEitY719/litellm-stack
+   - Single GitHub repository: <https://github.com/dEitY719/litellm-stack>
    - Unified version management (v1.0.0)
    - Simplified deployment workflow
    - Reference: `docs/git-repository-strategy.md`
@@ -92,7 +94,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ### Git Status
 
 - ✅ Initial commit: `9efaf3d`
-- ✅ Pushed to: https://github.com/dEitY719/litellm-stack
+- ✅ Pushed to: <https://github.com/dEitY719/litellm-stack>
 - ✅ Tagged: v1.0.0
 - ✅ Branch: main
 
@@ -103,11 +105,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ### 1. Directory Rename (User will do manually)
 
 **Current:**
+
 ```
 /home/bwyoon/para/project/devnet_env_setup/
 ```
 
 **Target:**
+
 ```
 /home/bwyoon/para/project/ollama/
 ```
@@ -125,6 +129,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ### 3. ✅ Updated docker-compose.yml (COMPLETED)
 
 New structure completed:
+
 - ✅ Single unified `ollama` service (port 11434)
 - ✅ GPU acceleration configured
 - ✅ Proper healthchecks with `depends_on` conditions
@@ -303,6 +308,7 @@ docker network inspect litellm-network
 **Current Status:** ⚠️ Needs update to new architecture
 
 **Expected Structure:**
+
 ```yaml
 services:
   ollama:          # Single Ollama service (was: tinyllama1, tinyllama2, tinyllama3)
@@ -330,6 +336,7 @@ services:
 ### litellm_settings.yml
 
 **Model Configuration:**
+
 ```yaml
 model_list:
   # Local Ollama models
@@ -351,6 +358,7 @@ model_list:
 ```
 
 **Key Points:**
+
 - Use `http://ollama:11434` (service name, not localhost)
 - External API keys loaded from environment variables
 - Changes require LiteLLM restart: `docker compose restart litellm`
@@ -358,6 +366,7 @@ model_list:
 ### Environment Variables
 
 **.env file (create from .env.example):**
+
 ```bash
 # External API keys
 GEMINI_API_KEY=your-gemini-api-key-here
@@ -418,6 +427,7 @@ docker compose up -d --force-recreate litellm
 ### System Requirements
 
 #### Low Spec PC (Minimum)
+
 - **CPU**: 4+ cores
 - **RAM**: 8GB
 - **GPU**: Not required (CPU mode)
@@ -425,6 +435,7 @@ docker compose up -d --force-recreate litellm
 - **Models**: tinyllama, external APIs
 
 #### High Spec PC (Recommended)
+
 - **CPU**: 8+ cores
 - **RAM**: 16GB+
 - **GPU**: NVIDIA 16GB+ VRAM

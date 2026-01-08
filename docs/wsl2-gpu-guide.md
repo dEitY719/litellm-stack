@@ -35,6 +35,7 @@ Windows 호스트
 ```
 
 **핵심 포인트:**
+
 - Windows 드라이버가 WSL2에 GPU 접근 제공
 - WSL2 내에 별도 NVIDIA 드라이버 설치 불필요
 - Docker 컨테이너는 WSL2를 통해 간접적으로 GPU 접근
@@ -56,6 +57,7 @@ Windows 호스트
 ### 2.1 왜 Docker 컨테이너에서 nvidia-smi가 안 되는가?
 
 #### 문제 상황
+
 ```bash
 # Makefile의 health 체크 시도
 docker exec ollama nvidia-smi
@@ -85,6 +87,7 @@ docker exec ollama nvidia-smi
 ### 2.3 실제 GPU 사용 확인 방법
 
 **❌ 잘못된 방법:**
+
 ```bash
 docker exec ollama nvidia-smi  # WSL2에서 작동 안 함
 ```
@@ -92,11 +95,13 @@ docker exec ollama nvidia-smi  # WSL2에서 작동 안 함
 **✅ 올바른 방법:**
 
 방법 1: WSL2 호스트에서 nvidia-smi 사용 (권장)
+
 ```bash
 /usr/lib/wsl/lib/nvidia-smi
 ```
 
 방법 2: Ollama 로그로 GPU 사용 확인
+
 ```bash
 # GPU 메모리 인식
 docker logs ollama 2>&1 | grep "gpu memory"
@@ -106,6 +111,7 @@ docker logs ollama 2>&1 | grep "offloaded.*layers"
 ```
 
 방법 3: 프로젝트 스크립트 사용 (가장 편함)
+
 ```bash
 ./scripts/gpu_status.sh
 # 또는
@@ -119,6 +125,7 @@ make gpu-status
 ### 3.1 WSL2 호스트에서 확인
 
 #### GPU 하드웨어 정보
+
 ```bash
 # 기본 정보
 /usr/lib/wsl/lib/nvidia-smi
@@ -128,12 +135,14 @@ make gpu-status
 ```
 
 **출력 예시:**
+
 ```
 name, memory.total [MiB], memory.free [MiB], memory.used [MiB]
 NVIDIA GeForce RTX 5070 Ti, 16303 MiB, 14109 MiB, 1799 MiB
 ```
 
 #### 실시간 모니터링
+
 ```bash
 watch -n 1 '/usr/lib/wsl/lib/nvidia-smi'
 ```
@@ -141,21 +150,25 @@ watch -n 1 '/usr/lib/wsl/lib/nvidia-smi'
 ### 3.2 Ollama 로그를 통한 GPU 확인
 
 #### GPU 메모리 인식 확인
+
 ```bash
 docker logs ollama 2>&1 | grep "gpu memory"
 ```
 
 **정상 출력 예시:**
+
 ```
 level=INFO source=sched.go:450 msg="gpu memory" id=GPU-00704267... library=CUDA available="13.5 GiB" free="13.9 GiB" minimum="457.0 MiB" overhead="0 B"
 ```
 
 #### 레이어 오프로드 확인 (가장 중요!)
+
 ```bash
 docker logs ollama 2>&1 | grep "offloaded.*layers to GPU" | tail -1
 ```
 
 **출력 해석:**
+
 - `offloaded 25/25 layers to GPU` → ✅ **정상**: 모든 레이어가 GPU에서 실행
 - `offloaded 20/25 layers to GPU` → ⚠️ **부분 GPU**: 일부만 GPU 사용, 나머지 CPU
 - `offloaded 0/25 layers to GPU` → ❌ **CPU 모드**: GPU 미사용 (성능 저하)
@@ -163,6 +176,7 @@ docker logs ollama 2>&1 | grep "offloaded.*layers to GPU" | tail -1
 ### 3.3 프로젝트 전용 스크립트 사용
 
 #### gpu_status.sh (권장)
+
 ```bash
 # 전체 GPU 상태 진단
 ./scripts/gpu_status.sh
@@ -172,6 +186,7 @@ make gpu-status
 ```
 
 **제공 정보:**
+
 - WSL2 호스트 GPU 하드웨어
 - Docker GPU 설정 검증
 - Ollama GPU 인식 상태
@@ -180,6 +195,7 @@ make gpu-status
 - 성능 최적화 권장사항
 
 #### Makefile 단축 명령어
+
 ```bash
 # 간략 정보
 make gpu-info
@@ -195,6 +211,7 @@ make health
 ### 4.1 GPU 레이어 오프로드 문제 해결
 
 #### 증상
+
 ```bash
 # Ollama 로그에서
 docker logs ollama 2>&1 | grep "offloaded.*layers"
@@ -204,6 +221,7 @@ docker logs ollama 2>&1 | grep "offloaded.*layers"
 #### 해결 방법 (단계별)
 
 **1단계: Ollama 재시작**
+
 ```bash
 docker compose restart ollama
 ```
@@ -221,6 +239,7 @@ ollama:
 ```
 
 **3단계: 스택 재구축**
+
 ```bash
 docker compose down
 docker compose up -d
@@ -228,6 +247,7 @@ sleep 30
 ```
 
 **4단계: 확인**
+
 ```bash
 make gpu-status
 # 또는
@@ -235,11 +255,13 @@ docker logs ollama 2>&1 | grep "offloaded.*layers" | tail -1
 ```
 
 기대 결과:
+
 ```
 offloaded 25/25 layers to GPU  ✅ 성공
 ```
 
 **5단계: 지속 실패 시**
+
 ```bash
 # CUDA 호환성 확인
 docker logs ollama 2>&1 | grep -i 'cuda'
@@ -256,6 +278,7 @@ cat docs/wsl2-gpu-guide.md  # 이 문서의 섹션 5
 #### RTX 5070 Ti (16GB VRAM) 권장 설정
 
 현재 `docker-compose.yml`의 기본값:
+
 ```yaml
 ollama:
   environment:
@@ -279,6 +302,7 @@ ollama:
 | llama-3-70b | ~38GB | ~42GB | 48GB (A100 등) |
 
 **계산식:**
+
 ```
 필요 VRAM = 모델 크기 × 1.3 + GPU Overhead + KV Cache
 ```
@@ -286,6 +310,7 @@ ollama:
 ### 4.3 Flash Attention 최적화
 
 #### 지원 GPU
+
 - NVIDIA Ampere 이상 (Compute Capability 8.0+)
   - RTX 30xx 시리즈 ✅
   - RTX 40xx 시리즈 ✅
@@ -293,12 +318,14 @@ ollama:
   - A100, H100 ✅
 
 #### 활성화 확인
+
 ```bash
 docker exec ollama env | grep OLLAMA_FLASH_ATTENTION
 # 출력: OLLAMA_FLASH_ATTENTION=1  ✅ 활성화됨
 ```
 
 #### 성능 개선 효과
+
 - 추론 속도: 20-30% 향상
 - 메모리 사용: 15-20% 감소
 - Long context 처리: 더 빠름
@@ -310,12 +337,14 @@ docker exec ollama env | grep OLLAMA_FLASH_ATTENTION
 ### 5.1 GPU 레이어 오프로드 실패 (0/25)
 
 **증상:**
+
 ```bash
 docker logs ollama 2>&1 | grep "offloaded.*layers"
 # 출력: "offloaded 0/25 layers to GPU"
 ```
 
 **진단 명령:**
+
 ```bash
 ./scripts/gpu_status.sh  # 상세 진단
 ```
@@ -323,6 +352,7 @@ docker logs ollama 2>&1 | grep "offloaded.*layers"
 **해결 방법 (우선순위):**
 
 **1️⃣ CUDA 드라이버 버전 불일치**
+
 ```bash
 # Ollama 로그 확인
 docker logs ollama 2>&1 | grep -i "CUDA driver version is insufficient"
@@ -332,6 +362,7 @@ docker logs ollama 2>&1 | grep -i "CUDA driver version is insufficient"
 ```
 
 **2️⃣ GPU 메모리 부족**
+
 ```bash
 # 사용 가능한 VRAM 확인
 /usr/lib/wsl/lib/nvidia-smi --query-gpu=memory.free --format=csv
@@ -343,6 +374,7 @@ docker logs ollama 2>&1 | grep -i "CUDA driver version is insufficient"
 ```
 
 **3️⃣ 환경변수 미설정**
+
 ```yaml
 # docker-compose.yml 확인
 ollama:
@@ -352,6 +384,7 @@ ollama:
 ```
 
 **4️⃣ Docker GPU 설정 오류**
+
 ```bash
 # GPU 설정 검증
 docker inspect ollama --format '{{json .HostConfig.DeviceRequests}}' | jq
@@ -367,6 +400,7 @@ docker inspect ollama --format '{{json .HostConfig.DeviceRequests}}' | jq
 ```
 
 **5️⃣ 지속 실패 시**
+
 ```bash
 # WSL2 환경 재부팅
 wsl --shutdown
@@ -383,6 +417,7 @@ make gpu-status
 **원인**: WSL2 환경에서 정상 (섹션 2 참조)
 
 **해결:**
+
 ```bash
 # 호스트에서 실행 (올바른 방법)
 /usr/lib/wsl/lib/nvidia-smi
@@ -394,6 +429,7 @@ make gpu-status
 ### 5.3 VRAM 사용량이 높은데 레이어 오프로드 안 됨
 
 **증상:**
+
 ```bash
 # GPU 메모리는 사용 중
 /usr/lib/wsl/lib/nvidia-smi
@@ -405,12 +441,14 @@ docker logs ollama | grep offloaded
 ```
 
 **원인**: 다른 프로그램이 GPU 메모리 점유
+
 - Chrome (GPU 가속 활성화)
 - VS Code (GPU 기능 사용)
 - 게임
 - 다른 CUDA 애플리케이션
 
 **해결:**
+
 ```bash
 # GPU 사용 프로세스 확인
 /usr/lib/wsl/lib/nvidia-smi pmon
@@ -428,6 +466,7 @@ docker compose restart ollama
 ### 5.4 모델이 느리게 작동 (GPU는 정상인데)
 
 **확인:**
+
 ```bash
 docker logs ollama 2>&1 | grep "offloaded.*layers"
 # 출력: "offloaded 25/25 layers to GPU"  ✅ GPU 정상
@@ -518,6 +557,7 @@ make health                                    # 헬스체크 (GPU 포함)
 ### C. 환경변수 권장값 (RTX 5070 Ti 16GB 기준)
 
 **docker-compose.yml:**
+
 ```yaml
 OLLAMA_GPU_OVERHEAD: "1073741824"              # 1GB
 OLLAMA_NUM_PARALLEL: "2"                       # 동시 요청 2개
@@ -527,6 +567,7 @@ OLLAMA_FLASH_ATTENTION: "1"                    # 활성화
 ```
 
 **GPU VRAM별 권장:**
+
 ```
 8GB 이하:
   - OLLAMA_GPU_OVERHEAD: "536870912" (512MB)

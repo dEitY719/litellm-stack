@@ -20,12 +20,14 @@
 **✅ 추천: 단일 Repository (Monorepo)**
 
 **이유:**
+
 - 이미 단일 `docker-compose.yml`로 통합됨
 - 설정 파일 간 의존성이 강함 (`litellm_settings.yml` ↔ `docker-compose.yml`)
 - 함께 배포되어야 하는 "단일 애플리케이션"
 - 버전 관리 단순화 (한 번의 commit/tag로 전체 스택 버전 관리)
 
 **언제 별도 레포를 써야 하나?**
+
 - Ollama를 여러 프로젝트에서 공유할 때
 - 팀이 분리되어 있을 때 (Infra팀 vs App팀)
 - 릴리스 사이클이 완전히 다를 때
@@ -211,11 +213,13 @@ docker compose -f litellm/docker-compose.litellm.yml up -d
 ```
 
 **배포 시나리오:**
+
 - Ollama와 LiteLLM은 **항상 함께 배포**됨
 - 설정 파일 간 강한 의존성 (litellm_settings.yml의 `api_base: http://ollama:11434`)
 - 버전 불일치 시 문제 발생 가능성 높음
 
 **팀 구조:**
+
 - 대부분의 경우 **같은 팀**이 관리
 - Infra와 App이 분리되어도, 이 스택은 "AI Gateway" 단일 역할
 
@@ -330,6 +334,7 @@ curl http://localhost:4444/models -H "Authorization: Bearer sk-4444"
 ## 라이선스
 
 MIT
+
 ```
 
 ### 4.3 .gitignore
@@ -377,45 +382,45 @@ credentials.json
 .PHONY: help up down restart logs ps health setup test
 
 help:
-	@echo "LiteLLM Stack - Available Commands"
-	@echo "=================================="
-	@echo "make up        - Start all services"
-	@echo "make down      - Stop all services"
-	@echo "make restart   - Restart all services"
-	@echo "make logs      - View logs"
-	@echo "make ps        - Show running containers"
-	@echo "make health    - Health check"
-	@echo "make setup     - Auto setup models"
-	@echo "make test      - Run integration tests"
+ @echo "LiteLLM Stack - Available Commands"
+ @echo "=================================="
+ @echo "make up        - Start all services"
+ @echo "make down      - Stop all services"
+ @echo "make restart   - Restart all services"
+ @echo "make logs      - View logs"
+ @echo "make ps        - Show running containers"
+ @echo "make health    - Health check"
+ @echo "make setup     - Auto setup models"
+ @echo "make test      - Run integration tests"
 
 up:
-	@echo "Starting LiteLLM Stack..."
-	docker compose up -d
-	@echo "Waiting for services to be ready..."
-	@sleep 10
-	@make health
+ @echo "Starting LiteLLM Stack..."
+ docker compose up -d
+ @echo "Waiting for services to be ready..."
+ @sleep 10
+ @make health
 
 down:
-	docker compose down
+ docker compose down
 
 restart:
-	@make down
-	@make up
+ @make down
+ @make up
 
 logs:
-	docker compose logs -f
+ docker compose logs -f
 
 ps:
-	docker compose ps
+ docker compose ps
 
 health:
-	@./scripts/health_check.sh
+ @./scripts/health_check.sh
 
 setup:
-	@./scripts/setup_models.sh
+ @./scripts/setup_models.sh
 
 test:
-	@./tests/integration_test.sh
+ @./tests/integration_test.sh
 ```
 
 ### 4.5 GitHub Actions CI/CD
@@ -717,6 +722,7 @@ mv ../devnet_env_setup ../devnet_env_setup.old
 > **✅ Monorepo (단일 Repository) 추천**
 >
 > 이유:
+>
 > 1. 이미 단일 `docker-compose.yml`로 통합됨
 > 2. 같은 팀이 관리
 > 3. 항상 함께 배포

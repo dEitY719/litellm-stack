@@ -945,7 +945,7 @@ docker exec ollama ollama pull gpt-oss:20b
 docker exec ollama ollama list
 ```
 
-#### 문제: "Connection refused" (http://ollama:11434)
+#### 문제: "Connection refused" (<http://ollama:11434>)
 
 **원인**: Ollama 서비스가 시작되지 않음
 

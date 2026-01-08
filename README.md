@@ -3,16 +3,19 @@
 Local LLM serving (Ollama) + OpenAI-compatible gateway (LiteLLM) in one Docker Compose stack.
 
 ## What is this? 🤖
+
 - One compose file to run LiteLLM + Ollama + Postgres locally.
 - Use OpenAI-style APIs while routing to local or external models.
 - Includes ready-to-run Python examples and smoke-test scripts.
 
 ## Prerequisites 🔧
+
 - Docker & Docker Compose v2+
 - (Optional) NVIDIA GPU drivers for acceleration
 - RAM 8GB+ recommended
 
 ## Install & Run 🏁
+
 ```bash
 # 1) Clone
 git clone https://github.com/dEitY719/litellm-stack
@@ -35,6 +38,7 @@ chmod +x scripts/health_check.sh
 ```
 
 ## Quick Smoke Test ✅
+
 ```bash
 # List models
 curl http://localhost:4444/models \
@@ -48,6 +52,7 @@ curl http://localhost:4444/v1/chat/completions \
 ```
 
 ## Python Samples 🐍
+
 ```bash
 pip install -r requirements.txt
 python example/test_openai.py           # OpenAI SDK style
@@ -56,6 +61,7 @@ python example/test_langchain_agent.py  # Agent example
 ```
 
 ## Handy Commands 🛠️
+
 ```bash
 make up        # start services
 make down      # stop
@@ -65,11 +71,13 @@ make health    # run health checks
 ```
 
 ## Docs & Help 📚
+
 - Architecture: docs/architecture-litellm-ollama-final.md
 - Repo strategy: docs/git-repository-strategy.md
 - More examples and scripts live in `example/` and `scripts/`.
 
 ## Troubleshooting 🩹
+
 - GPU not detected: `nvidia-smi` on host, then `docker run --rm --gpus all nvidia/cuda:12.4.1-base-ubuntu22.04 nvidia-smi`
 - Proxy health: `docker compose logs -f litellm`
 - Model cache issues: restart stack `docker compose down -v && docker compose up -d`

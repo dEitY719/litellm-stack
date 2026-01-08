@@ -64,6 +64,7 @@ python -m pip list | grep -E "langchain|litellm"
 ```
 
 필수 패키지:
+
 - `langchain` (>= 1.0.0)
 - `langchain-community` (>= 0.4.0)
 - `litellm` (>= 1.34.0)
@@ -111,6 +112,7 @@ Entering new AgentExecutor...
 **원인**: LiteLLM 프록시가 실행 중이 아닙니다.
 
 **해결**:
+
 ```bash
 # 프록시 상태 확인
 docker compose ps litellm
@@ -130,6 +132,7 @@ curl http://localhost:4444/health/liveliness
 **원인**: GEMINI_API_KEY가 설정되지 않았거나 잘못되었습니다.
 
 **해결**:
+
 ```bash
 # docker-compose.yml에서 GEMINI_API_KEY 확인
 grep "GEMINI_API_KEY" docker-compose.yml
@@ -146,6 +149,7 @@ docker compose logs litellm | grep -i gemini
 **원인**: litellm_settings.yml에 gemini-pro가 등록되지 않았습니다.
 
 **해결**:
+
 ```bash
 # 사용 가능한 모델 확인
 curl -X GET "http://localhost:4444/models" \
@@ -160,6 +164,7 @@ docker compose up -d --force-recreate litellm
 **원인**: localhost:4444에 연결할 수 없습니다.
 
 **해결**:
+
 ```bash
 # 포트 포워딩 확인
 docker compose ps litellm
@@ -177,6 +182,7 @@ sudo ufw allow 4444
 **원인**: LangChain Hub에서 ReAct 프롬프트를 다운로드할 수 없습니다.
 
 **해결**:
+
 ```bash
 # 네트워크 연결 확인
 ping github.com
@@ -194,6 +200,7 @@ python src/run_langchain_agent.py
 **원인**: 모델 응답이 느립니다 (네트워크 또는 모델 처리 시간).
 
 **해결**:
+
 ```bash
 # Ollama 모델 상태 확인
 docker exec -it tinyllama1 ollama list
@@ -250,21 +257,25 @@ question1 = "서울의 날씨는 어떻습니까?"
 ### 응답 속도 개선
 
 1. **로컬 모델 사용**: gemini 대신 tinyllama 사용 (더 빠름)
+
    ```python
    model="tinyllama1"
    ```
 
 2. **Temperature 낮추기**: 빠른 응답 (덜 창의적)
+
    ```python
    temperature=0.3
    ```
 
 3. **Max tokens 낮추기**: 응답 길이 제한
+
    ```python
    max_tokens=1024
    ```
 
 4. **Timeout 단축**: 느린 응답 제한
+
    ```python
    timeout=15
    ```
