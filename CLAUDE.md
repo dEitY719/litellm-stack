@@ -23,31 +23,58 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ---
 
-## 📅 Recent Work History (2025-12-08)
+## 📅 Recent Work History
 
-### Latest Updates (Post-Integration)
+### Latest Updates (2026-01-13) - Peer Setup Compatibility Fix
+
+**Problem Identified:**
+- Peers could not clone and run the repo (docker-compose up would fail)
+- Root cause: `docker-compose.yml` marked volumes and network as `external: true`
+- This required manual `make init` or `scripts/migrate.sh` execution
+- Not intuitive for new users → breaking "first-time setup" experience
+
+**Fixes Applied:**
+
+1. **docker-compose.yml - Remove `external: true`**
+   - Volumes: `litellm_postgres_data`, `litellm_ollama_data` now auto-create
+   - Network: `litellm-network` now auto-create on first `docker compose up -d`
+   - Impact: New environments work seamlessly without pre-initialization
+
+2. **scripts/migrate.sh - Enhanced**
+   - Now creates both volumes AND network (previously volumes only)
+   - Better status messaging for troubleshooting
+   - Still supports legacy migration from previous `litellm` project
+
+3. **README.md - Clearer Quick Start**
+   - Added explicit "Initialize" section with two options:
+     - Option A: `make init && make up` (recommended)
+     - Option B: `cp .env.example .env && docker compose up -d`
+   - Added "Troubleshooting" for fresh setup errors
+   - Better step-by-step guide
+
+4. **Why this change?**
+   - `external: true` was intended for graceful migration from separate projects
+   - But it prevented fresh clones from working
+   - New approach: Auto-create on first run, keep existing if present
+   - Better UX: Works both for migration AND new setups
+
+---
+
+### Previous Updates (2025-12-08)
 
 **Fixes Applied:**
 
 1. **setup_models.sh VRAM threshold fix**
    - Changed from 16GB to 14GB (more realistic for gpt-oss:20b)
    - Allows 15GB VRAM systems to run high-spec models
-   - Reference: User feedback on false "low-spec" detection
 
-2. **Volume External Reference**
-   - docker-compose.yml volumes now marked as `external: true`
-   - Allows graceful migration from previous `litellm` project
-   - Prevents "volume already exists" warnings
-
-3. **Migration Script**
-   - New `scripts/migrate.sh` for volume initialization
-   - Automatically creates missing Docker volumes
+2. **Migration Script** (initial)
+   - Created `scripts/migrate.sh` for volume initialization
    - Integrated into `make init` workflow
 
-4. **Makefile Enhancement**
-   - `make init` now includes volume migration
+3. **Makefile Enhancement**
+   - `make init` includes volume migration
    - Better help message formatting
-   - Updated from slea-ssem reference style
 
 ### Project Consolidation
 
@@ -102,6 +129,21 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 📋 Pending Tasks
 
+### ✅ COMPLETED (2026-01-13)
+
+**Peer Setup Compatibility Issue - FIXED**
+
+1. ✅ `docker-compose.yml` - Removed `external: true` from volumes and network
+2. ✅ `scripts/migrate.sh` - Enhanced to create network + volumes
+3. ✅ `README.md` - Added clear initialization instructions
+4. ✅ `CLAUDE.md` - Updated with latest work history
+
+**Why these fixes ensure peer compatibility:**
+- Fresh `git clone` → `make init && make up` now works seamlessly
+- No more manual volume/network creation needed
+- Both migration (existing data) and fresh setup cases work
+- Better error messages in troubleshooting
+
 ### 1. Directory Rename (User will do manually)
 
 **Current:**
@@ -118,17 +160,16 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **Reason:** More intuitive name
 
-**Impact on this repo:** None (this is a separate project)
-
-### 2. ✅ Scripts Created (COMPLETED)
+### 2. ✅ Scripts (COMPLETED)
 
 - ✅ `scripts/setup_models.sh` - Auto model setup with GPU detection
 - ✅ `scripts/health_check.sh` - Full stack health check
+- ✅ `scripts/migrate.sh` - Volume + network initialization
 - 🔄 Future: `scripts/backup.sh`, `scripts/restore.sh`
 
-### 3. ✅ Updated docker-compose.yml (COMPLETED)
+### 3. ✅ docker-compose.yml (COMPLETED)
 
-New structure completed:
+Structure completed:
 
 - ✅ Single unified `ollama` service (port 11434)
 - ✅ GPU acceleration configured

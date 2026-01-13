@@ -23,16 +23,36 @@ Unified Docker Compose stack to run **Ollama** (local LLM inference) + **LiteLLM
 ```bash
 git clone https://github.com/dev-team-404/litellm-stack
 cd litellm-stack
-
-# Copy example env (add API keys if needed)
-cp .env.example .env
-# Edit .env only if you want external APIs (Gemini, OpenAI, etc.)
 ```
 
-### 2. Start Services
+### 2. Initialize (First Time Only)
+
+**Option A: Using Makefile (Recommended)**
 
 ```bash
+make init    # Creates .env file and Docker volumes/network
+make up      # Start all services
+```
+
+**Option B: Manual Setup**
+
+```bash
+# Copy env config
+cp .env.example .env
+
+# Create Docker volumes and network (or auto-created on first docker compose up)
 docker compose up -d
+```
+
+### 3. Verify Services Started
+
+After running `make up` or `docker compose up -d`:
+
+```bash
+# Check container status
+docker compose ps
+# or
+make ps
 ```
 
 This starts:
@@ -41,18 +61,14 @@ This starts:
 - **LiteLLM** (port 4444) — OpenAI-compatible proxy
 - **PostgreSQL** (port 5431) — stores config and usage logs
 
-### 3. Verify It Works
+### 4. Download Models
 
 ```bash
-# Check service status
-docker compose ps
-
-# List available models
-curl http://localhost:4444/models \
-  -H "Authorization: Bearer sk-4444"
+# Auto-detect your hardware and download appropriate models
+make setup-models
 ```
 
-### 4. Test a Model
+### 5. Test a Model
 
 ```bash
 curl http://localhost:4444/v1/chat/completions \
@@ -135,17 +151,29 @@ make health       # Check all services
 
 ## Troubleshooting
 
+**Fresh Setup Errors (volumes/network not found)?**
+```bash
+# Use this to initialize volumes and network first
+make init
+
+# Then start services
+make up
+```
+
 **Containers won't start?**
+
 ```bash
 # Check logs
 docker compose logs litellm
 
-# Full restart
+# Full restart with clean state
 docker compose down -v
-docker compose up -d
+make init
+make up
 ```
 
 **GPU not detected?**
+
 ```bash
 # On host
 nvidia-smi
@@ -155,6 +183,7 @@ docker run --rm --gpus all nvidia/cuda:12.4.1-base-ubuntu22.04 nvidia-smi
 ```
 
 **Out of memory?**
+
 ```bash
 # Remove unused models
 docker exec ollama ollama rm model-name
@@ -186,6 +215,6 @@ MIT — see LICENSE file for details.
 
 ## Support
 
-- Ollama docs: https://github.com/ollama/ollama
-- LiteLLM docs: https://docs.litellm.ai/
+- Ollama docs: <https://github.com/ollama/ollama>
+- LiteLLM docs: <https://docs.litellm.ai/>
 - Issues: Create a GitHub issue
