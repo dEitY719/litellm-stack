@@ -61,3 +61,13 @@ general:
   litellm_settings:
     success_callback: ["postgres"]
     failure_callback: ["postgres"]
+
+# 1. UI 로그 저장을 위한 설정 (Admin 페이지 가이드 내용)
+general_settings:
+  store_model_in_db: true
+  store_prompts_in_spend_logs: true
+
+# 2. (선택사항) 터미널에서도 보고 싶다면 유지, 아니면 삭제해도 됨
+litellm_settings:
+  log_payload: true
+  ssl_verify: false  # 개발 환경: SSL 인증서 검증 비활성화
