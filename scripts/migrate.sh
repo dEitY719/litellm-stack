@@ -12,6 +12,7 @@ echo ""
 REQUIRED_VOLUMES=(
     "litellm_postgres_data"
     "litellm_ollama_data"
+    "litellm_cache"
 )
 
 # 존재하는 volume 목록

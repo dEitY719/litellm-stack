@@ -91,11 +91,21 @@ services:
     restart: unless-stopped
     volumes:
       - ./litellm_settings.yml:/app/config.yml
+      - litellm_cache:/app/.cache
     command:
       - "--config=config.yml"
     ports:
       - "4444:4000"
     environment:
+      # ═══════════════════════════════════════════════════
+      # Prisma 환경 설정 (모든 환경)
+      # ═══════════════════════════════════════════════════
+      HOME: "/app"
+      XDG_CACHE_HOME: "/app/.cache"
+
+      # ═══════════════════════════════════════════════════
+      # LiteLLM 설정
+      # ═══════════════════════════════════════════════════
       DATABASE_URL: "postgresql://llmproxy:dbpassword9090@db:5432/litellm"
       STORE_MODEL_IN_DB: "True"
       LITELLM_MASTER_KEY: "sk-4444"
@@ -117,6 +127,9 @@ volumes:
     external: true
   ollama_data:
     name: litellm_ollama_data
+    external: true
+  litellm_cache:
+    name: litellm_cache
     external: true
 
 networks:

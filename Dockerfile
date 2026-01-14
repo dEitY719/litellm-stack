@@ -15,10 +15,25 @@
 ARG BUILD_TYPE=home
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Stage 1: 기본 이미지
+# Stage 1: 기본 이미지 + Prisma 초기화 (모든 환경)
 # ─────────────────────────────────────────────────────────────────────────────
 FROM ghcr.io/berriai/litellm:main-v1.73.0-stable as base
 LABEL build_type="${BUILD_TYPE}"
+
+USER root
+
+# Prisma 설정: nodejs-bin 설치 (모든 환경에서 필요)
+RUN pip install --no-cache-dir nodejs-bin
+
+# Prisma 환경 설정
+ENV HOME=/app
+ENV XDG_CACHE_HOME=/app/.cache
+RUN mkdir -p /app/.cache/prisma-python && chown -R 1000:1000 /app
+
+# Prisma CLI 사전 초기화 (런타임 타임아웃 방지)
+RUN prisma --version || true
+
+USER 1000
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Stage 2: Internal 빌드 (CA 인증서 + SSL 검증 비활성화)
@@ -54,17 +69,6 @@ PY
 ENV SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt
 ENV REQUESTS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt
 ENV NODE_EXTRA_CA_CERTS=/etc/ssl/certs/ca-certificates.crt
-
-# Prisma 설정: nodejs-bin 설치
-RUN pip install --no-cache-dir nodejs-bin
-
-# Prisma 환경 설정
-ENV HOME=/app
-ENV XDG_CACHE_HOME=/app/.cache
-RUN mkdir -p /app/.cache/prisma-python && chown -R 1000:1000 /app
-
-# Prisma CLI 사전 초기화 (런타임 타임아웃 방지)
-RUN prisma --version || true
 
 # Python SSL 검증 비활성화 패치 (런타임용)
 # ⚠️ Internal 필수: 회사 프록시/방화벽 대응
