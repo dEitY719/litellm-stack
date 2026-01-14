@@ -86,11 +86,7 @@ services:
   # ═══════════════════════════════════════════════════
   litellm:
     container_name: litellm
-    build:
-      context: .
-      dockerfile: Dockerfile
-      args:
-        BUILD_TYPE: home
+    image: ghcr.io/berriai/litellm:main-v1.73.0-stable
     restart: unless-stopped
     volumes:
       - ./litellm_settings.yml:/app/config.yml
@@ -108,8 +104,9 @@ services:
       # ═══════════════════════════════════════════════════
       # LiteLLM 설정
       # ═══════════════════════════════════════════════════
-      DATABASE_URL: "postgresql://llmproxy:dbpassword9090@db:5432/litellm"
-      STORE_MODEL_IN_DB: "True"
+      # DATABASE_URL 제거: Prisma 비활성화로 nodeenv SSL 오류 해결
+      # Prisma는 DATABASE_URL이 없으면 자동으로 비활성화됨
+      STORE_MODEL_IN_DB: "False"
       LITELLM_MASTER_KEY: "sk-4444"
     depends_on:
       db:
