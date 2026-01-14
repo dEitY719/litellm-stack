@@ -86,12 +86,14 @@ services:
   # ═══════════════════════════════════════════════════
   litellm:
     container_name: litellm
-    image: ghcr.io/berriai/litellm:main-v1.73.0-stable
-    user: "1000"
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        BUILD_TYPE: home
     restart: unless-stopped
     volumes:
       - ./litellm_settings.yml:/app/config.yml
-      - litellm_cache:/app/.cache
     command:
       - "--config=config.yml"
     ports:

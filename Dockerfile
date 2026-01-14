@@ -22,25 +22,57 @@ LABEL build_type="${BUILD_TYPE}"
 
 USER root
 
-# Prisma 설정: nodejs-bin 설치 (모든 환경에서 필요)
-RUN pip install --no-cache-dir nodejs-bin
-
 # Prisma 환경 설정
 ENV HOME=/app
 ENV XDG_CACHE_HOME=/app/.cache
-RUN mkdir -p /app/.cache/prisma-python && chown -R 1000:1000 /app
+RUN mkdir -p /app/.cache/prisma-python
 
-# Prisma CLI 사전 초기화 (런타임 타임아웃 방지)
-RUN prisma --version || true
+# Python SSL 검증 비활성화 (nodeenv, npm 등의 바이너리 다운로드용)
+# Home/External: 개발 환경이므로 SSL 검증 비활성화 필요
+# Internal: 회사 프록시 대응을 위해 이미 비활성화됨
 
-USER 1000
+# urllib이 사용하는 기본 context를 무시하기 위해 monkey-patch 적용
+RUN python3 - <<'PY'
+import urllib.request
+import ssl
+
+# 기본 SSL context를 생성하는 함수를 재정의
+_original_create_default_context = ssl.create_default_context
+
+def _patched_create_default_context(purpose=ssl.Purpose.SERVER_AUTH, *, cafile=None, capath=None, cadata=None):
+    context = _original_create_default_context(purpose=purpose, cafile=cafile, capath=capath, cadata=cadata)
+    context.check_hostname = False
+    context.verify_mode = ssl.CERT_NONE
+    return context
+
+ssl.create_default_context = _patched_create_default_context
+urllib.request.ssl.create_default_context = _patched_create_default_context
+
+# sitecustomize.py에도 저장하여 persistence 확보
+import site
+site_packages = site.getsitepackages()[0]
+with open(f"{site_packages}/sitecustomize.py", 'w') as f:
+    f.write('''import ssl
+import urllib.request
+
+_original_create_default_context = ssl.create_default_context
+
+def _patched_create_default_context(purpose=ssl.Purpose.SERVER_AUTH, *, cafile=None, capath=None, cadata=None):
+    context = _original_create_default_context(purpose=purpose, cafile=cafile, capath=capath, cadata=cadata)
+    context.check_hostname = False
+    context.verify_mode = ssl.CERT_NONE
+    return context
+
+ssl.create_default_context = _patched_create_default_context
+urllib.request.ssl.create_default_context = _patched_create_default_context
+''')
+print("SSL verification disabled for all environments (urllib + nodeenv compatibility)")
+PY
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Stage 2: Internal 빌드 (CA 인증서 + SSL 검증 비활성화)
 # ─────────────────────────────────────────────────────────────────────────────
 FROM base as internal
-
-USER root
 
 # 회사 CA 인증서 복사
 COPY ./samsungsemi-prx.com.crt /usr/local/share/ca-certificates/corp-ca.crt
@@ -97,18 +129,12 @@ with open(f"{site_packages}/sitecustomize.py", 'w') as f:
 print("SSL verification disabled for Enterprise environment")
 PY
 
-USER 1000
-
 # ─────────────────────────────────────────────────────────────────────────────
 # Stage 3: Home/Public 빌드 (기본값, 추가 설정 없음)
 # ─────────────────────────────────────────────────────────────────────────────
 FROM base as home
 
-USER 1000
-
 # ─────────────────────────────────────────────────────────────────────────────
 # Stage 4: 최종 이미지 선택 (BUILD_TYPE에 따라)
 # ─────────────────────────────────────────────────────────────────────────────
 FROM ${BUILD_TYPE} as final
-
-USER 1000

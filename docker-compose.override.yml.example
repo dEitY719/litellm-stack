@@ -36,7 +36,7 @@ services:
     # ─────────────────────────────────────────────────────
     volumes:
       - ./litellm_settings.yml:/app/config.yml
-      - litellm_cache:/app/.cache
+      - litellm_cache:/app/.cache  # Root가 쓰기 권한을 가져야 함
 
     # ─────────────────────────────────────────────────────
     # 환경변수
