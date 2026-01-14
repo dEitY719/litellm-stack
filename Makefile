@@ -41,45 +41,50 @@ help:
 	@echo -e "$(BLUE)$(PROJECT_NAME) - LLM Stack 관리$(NC)"
 	@echo -e "$(BLUE)━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━$(NC)"
 	@echo ""
-	@echo -e "$(GREEN)초기 설정:$(NC)"
-	@echo "  make init              🔧 .env 파일 + Volume 초기화"
+	@echo -e "$(GREEN)🚀 빠른 시작:$(NC)"
+	@echo "  make init              🔧 환경 선택 + .env 생성 (필수 첫 단계)"
+	@echo "  make up                🚀 전체 스택 시작"
+	@echo "  make health            🏥 헬스 체크"
 	@echo ""
-	@echo -e "$(GREEN)Docker 관리:$(NC)"
+	@echo -e "$(GREEN)📋 Docker 관리:$(NC)"
 	@echo "  make up                🚀 전체 스택 시작"
 	@echo "  make down              🛑 전체 스택 정지"
 	@echo "  make restart           🔄 재시작"
-	@echo "  make rebuild           🆕 clean + up"
+	@echo "  make rebuild           🆕 clean + up (전체 재구축)"
+	@echo "  make logs              📊 실시간 로그 (Ctrl+C 종료)"
+	@echo "  make ps                📋 서비스 상태"
 	@echo ""
-	@echo -e "$(GREEN)LLM 모델 관리:$(NC)"
+	@echo -e "$(GREEN)🎮 모델 & GPU 관리:$(NC)"
 	@echo "  make setup-models      📥 모델 자동 설정 (GPU 감지)"
+	@echo "  make gpu-status        🎮 GPU 상세 상태"
+	@echo "  make gpu-info          ℹ️  GPU 하드웨어 정보"
 	@echo ""
-	@echo -e "$(GREEN)GPU 관리:$(NC)"
-	@echo "  make gpu-status        🎮 GPU 상세 상태 (WSL2 최적화)"
-	@echo "  make gpu-info          🎮 GPU 간략 정보"
-	@echo ""
-	@echo -e "$(GREEN)로깅 & 모니터링:$(NC)"
-	@echo "  make logs              📊 로그 조회"
-	@echo "  make health            🏥 전체 헬스 체크"
-	@echo "  make ps                📋 서비스 목록"
-	@echo ""
-	@echo -e "$(GREEN)컨테이너 접속:$(NC)"
+	@echo -e "$(GREEN)💻 컨테이너 접속:$(NC)"
 	@echo "  make shell             💻 LiteLLM 셸"
 	@echo "  make shell-db          💻 Database 셸"
 	@echo "  make shell-ollama      💻 Ollama 셸"
 	@echo ""
-	@echo -e "$(GREEN)정리:$(NC)"
+	@echo -e "$(GREEN)🧹 정리:$(NC)"
 	@echo "  make clean             🧹 캐시 및 불필요한 이미지 정리"
 	@echo ""
-	@echo -e "$(GREEN)사용 예시:$(NC)"
-	@echo "  make init              # 1. 초기화"
-	@echo "  make up                # 2. 시작"
+	@echo -e "$(YELLOW)📖 환경별 설정:$(NC)"
+	@echo "  • Home (개인 PC):      최소 설정, SSL 검증 활성화"
+	@echo "  • External (회사 외부): 최소 설정, SSL 검증 활성화"
+	@echo "  • Internal (회사 내부): CA 인증서 필수, SSL 검증 비활성화"
+	@echo "  → make init로 환경 선택 후 자동 설정됨"
+	@echo ""
+	@echo -e "$(GREEN)📚 사용 예시:$(NC)"
+	@echo "  make init              # 1. 환경 선택 (home/external/internal)"
+	@echo "  make up                # 2. 스택 시작"
 	@echo "  make setup-models      # 3. 모델 설정"
 	@echo "  make health            # 4. 헬스 체크"
 	@echo ""
-	@echo -e "$(BLUE)포트:$(NC)"
+	@echo -e "$(BLUE)🔗 포트:$(NC)"
 	@echo "  - LiteLLM:  $(LITELLM_URL)"
 	@echo "  - Ollama:   $(OLLAMA_URL)"
 	@echo "  - Database: localhost:5431"
+	@echo ""
+	@echo -e "$(BLUE)📖 더 많은 정보: SETUP.md 참조$(NC)"
 	@echo ""
 
 # ============================================================
@@ -87,20 +92,102 @@ help:
 # ============================================================
 
 init:
-	@echo -e "$(YELLOW)🔧 .env 파일 초기화 중...$(NC)"
-	@if [ ! -f .env ]; then \
-		cp .env.example .env; \
-		echo -e "$(GREEN)✅ .env 파일 생성 완료 (.env.example에서)$(NC)"; \
-	else \
-		echo -e "$(BLUE)ℹ️  .env 파일이 이미 있습니다 (초기화: rm .env && make init)$(NC)"; \
-	fi
 	@echo ""
-	@echo -e "$(YELLOW)🔄 Volume 마이그레이션 중...$(NC)"
-	@if [ -f scripts/migrate.sh ]; then \
-		bash scripts/migrate.sh; \
+	@echo -e "$(BLUE)╔════════════════════════════════════════════════════╗$(NC)"
+	@echo -e "$(BLUE)║       🔧 LiteLLM 환경 초기 설정$(NC)$(BLUE)        ║$(NC)"
+	@echo -e "$(BLUE)╚════════════════════════════════════════════════════╝$(NC)"
+	@echo ""
+	@echo -e "$(BLUE)실행 환경을 선택하세요:$(NC)"
+	@echo ""
+	@echo -e "  $(GREEN)1) home$(NC)      - 개인 PC (로컬 개발, SSL 검증 활성화)"
+	@echo -e "  $(GREEN)2) external$(NC)  - 회사 외부 PC (공개 GitHub, SSL 검증 활성화)"
+	@echo -e "  $(GREEN)3) internal$(NC)  - 회사 내부 PC (프록시, SSL 검증 비활성화, CA 인증서 필수)"
+	@echo ""
+	@read -p "선택 (1-3, Enter로 기본값 1 선택): " choice; \
+	choice=$${choice:-1}; \
+	case $$choice in \
+		1) \
+			LITELLM_ENV=home; \
+			ENV_CHOICE_NAME="Home (개인 PC - 로컬 개발)"; \
+			ENV_EMOJI="🏠"; \
+			;; \
+		2) \
+			LITELLM_ENV=external; \
+			ENV_CHOICE_NAME="External (회사 외부 - 공개 네트워크)"; \
+			ENV_EMOJI="🌐"; \
+			;; \
+		3) \
+			LITELLM_ENV=internal; \
+			ENV_CHOICE_NAME="Internal (회사 내부 - 프록시)"; \
+			ENV_EMOJI="🏢"; \
+			;; \
+		*) \
+			echo -e "$(RED)❌ 잘못된 선택입니다. 1-3 중 하나를 선택하세요.$(NC)"; \
+			exit 1; \
+			;; \
+	esac; \
+	echo ""; \
+	echo -e "$(YELLOW)$$ENV_EMOJI 선택됨: $$ENV_CHOICE_NAME$(NC)"; \
+	echo ""; \
+	echo -e "$(YELLOW)📝 .env 파일 생성 중...$(NC)"; \
+	if [ ! -f .env ]; then \
+		cp .env.example .env; \
+		echo -e "$(GREEN)   ✅ .env 파일 생성됨$(NC)"; \
 	else \
-		echo -e "$(RED)❌ scripts/migrate.sh 파일이 없습니다$(NC)"; \
-	fi
+		echo -e "$(BLUE)   ℹ️  .env 파일이 이미 있습니다 (초기화하려면: rm .env && make init)$(NC)"; \
+	fi; \
+	echo ""; \
+	echo -e "$(YELLOW)⚙️  환경 설정 적용 중 (LITELLM_ENV=$$LITELLM_ENV)...$(NC)"; \
+	if grep -q "LITELLM_ENV=" .env; then \
+		sed -i.bak "s/^LITELLM_ENV=.*/LITELLM_ENV=$$LITELLM_ENV/" .env; \
+		rm -f .env.bak; \
+		echo -e "$(GREEN)   ✅ .env 파일 업데이트됨 (LITELLM_ENV=$$LITELLM_ENV)$(NC)"; \
+	else \
+		echo "LITELLM_ENV=$$LITELLM_ENV" >> .env; \
+		echo -e "$(GREEN)   ✅ .env 파일에 LITELLM_ENV=$$LITELLM_ENV 추가됨$(NC)"; \
+	fi; \
+	echo ""; \
+	if [ "$$LITELLM_ENV" = "internal" ]; then \
+		echo -e "$(YELLOW)🏢 Internal PC 추가 설정...$(NC)"; \
+		if [ ! -f docker-compose.override.yml ]; then \
+			if [ -f docker-compose.override.yml.example ]; then \
+				cp docker-compose.override.yml.example docker-compose.override.yml; \
+				echo -e "$(GREEN)   ✅ docker-compose.override.yml 파일 생성됨$(NC)"; \
+			else \
+				echo -e "$(RED)   ❌ docker-compose.override.yml.example 파일을 찾을 수 없습니다$(NC)"; \
+			fi; \
+		else \
+			echo -e "$(BLUE)   ℹ️  docker-compose.override.yml 파일이 이미 있습니다$(NC)"; \
+		fi; \
+		echo ""; \
+		echo -e "$(YELLOW)⚠️  주의: CA 인증서 필요$(NC)"; \
+		if [ ! -f samsungsemi-prx.com.crt ]; then \
+			echo -e "$(RED)   ❌ samsungsemi-prx.com.crt 파일이 없습니다$(NC)"; \
+			echo -e "$(BLUE)   다음을 수행하세요:$(NC)"; \
+			echo -e "$(BLUE)   1. 회사 CA 인증서를 samsungsemi-prx.com.crt로 복사$(NC)"; \
+			echo -e "$(BLUE)   2. make up 실행$(NC)"; \
+		else \
+			echo -e "$(GREEN)   ✅ samsungsemi-prx.com.crt 파일 확인됨$(NC)"; \
+		fi; \
+	fi; \
+	echo ""; \
+	echo -e "$(YELLOW)🔄 Volume 마이그레이션 중...$(NC)"; \
+	if [ -f scripts/migrate.sh ]; then \
+		bash scripts/migrate.sh; \
+		echo -e "$(GREEN)   ✅ Volume 마이그레이션 완료$(NC)"; \
+	else \
+		echo -e "$(RED)   ❌ scripts/migrate.sh 파일이 없습니다$(NC)"; \
+	fi; \
+	echo ""; \
+	echo -e "$(BLUE)╔════════════════════════════════════════════════════╗$(NC)"; \
+	echo -e "$(GREEN)✅ 초기 설정 완료!$(NC)"; \
+	echo -e "$(BLUE)╚════════════════════════════════════════════════════╝$(NC)"; \
+	echo ""; \
+	echo -e "$(BLUE)다음 단계:$(NC)"; \
+	echo -e "  $(GREEN)make up$(NC)              - 스택 시작"; \
+	echo -e "  $(GREEN)make setup-models$(NC)   - 모델 설정"; \
+	echo -e "  $(GREEN)make health$(NC)         - 헬스 체크"; \
+	echo ""
 
 validate:
 	@echo -e "$(BLUE)✓ 구성 파일 검증 중...$(NC)"
@@ -116,7 +203,21 @@ validate:
 		echo -e "$(YELLOW)⚠️  .env 파일이 없습니다 (생성 중...)$(NC)"; \
 		$(MAKE) init; \
 	fi
-	@$(DC) config > /dev/null 2>&1 && echo -e "$(GREEN)✅ 구성 검증 완료$(NC)" || (echo -e "$(RED)❌ docker-compose.yml 오류$(NC)"; exit 1)
+	@if ! grep -q "LITELLM_ENV=" .env; then \
+		echo -e "$(YELLOW)⚠️  LITELLM_ENV 환경 설정이 없습니다 (설정 중...)$(NC)"; \
+		$(MAKE) init; \
+	fi
+	@LITELLM_ENV=$$(grep "LITELLM_ENV=" .env | cut -d'=' -f2 | tr -d ' '); \
+	if [ "$$LITELLM_ENV" = "internal" ] && [ ! -f docker-compose.override.yml ]; then \
+		echo -e "$(RED)❌ Internal 환경이지만 docker-compose.override.yml 파일이 없습니다$(NC)"; \
+		echo -e "$(BLUE)   → make init을 다시 실행하거나 docker-compose.override.yml.example을 복사하세요$(NC)"; \
+		exit 1; \
+	fi
+	@if [ "$$LITELLM_ENV" = "internal" ] && [ ! -f samsungsemi-prx.com.crt ]; then \
+		echo -e "$(YELLOW)⚠️  Internal 환경이지만 CA 인증서(samsungsemi-prx.com.crt)가 없습니다$(NC)"; \
+		echo -e "$(BLUE)   → 회사 CA 인증서를 복사한 후 make up을 실행하세요$(NC)"; \
+	fi
+	@$(DC) config > /dev/null 2>&1 && echo -e "$(GREEN)✅ 구성 검증 완료$(NC)" || (echo -e "$(RED)❌ docker-compose 오류$(NC)"; exit 1)
 
 # ============================================================
 # 2. Docker 실행 및 관리
