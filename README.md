@@ -17,22 +17,31 @@ Unified Docker Compose stack to run **Ollama** (local LLM inference) + **LiteLLM
 - Docker & Docker Compose v2+
 - 8GB+ RAM recommended
 - (Optional) NVIDIA GPU for faster inference
+- **Internal PC Users**: CA 인증서(samsungsemi-prx.com.crt) 필요 → [상세 가이드](docs/INTERNAL_SETUP.md)
 
-### 1. Clone & Configure
+### 1. Clone & Initialize
 
 ```bash
 git clone https://github.com/dev-team-404/litellm-stack
 cd litellm-stack
 
-# Copy example env (add API keys if needed)
-cp .env.example .env
-# Edit .env only if you want external APIs (Gemini, OpenAI, etc.)
+# 🔧 Interactive initialization (환경 선택)
+make init
 ```
+
+**선택 옵션:**
+```
+🏠 Home (개인 PC):         로컬 개발, SSL 검증 활성화
+🌐 External (회사 외부):   공개 GitHub, SSL 검증 활성화
+🏢 Internal (회사 내부):   프록시, CA 인증서 필수
+```
+
+> **Internal PC 사용자**: [docs/INTERNAL_SETUP.md](docs/INTERNAL_SETUP.md)에서 CA 인증서 다운로드 방법을 확인하세요.
 
 ### 2. Start Services
 
 ```bash
-docker compose up -d
+make up
 ```
 
 This starts:

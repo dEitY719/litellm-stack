@@ -160,14 +160,32 @@ init:
 			echo -e "$(BLUE)   ℹ️  docker-compose.override.yml 파일이 이미 있습니다$(NC)"; \
 		fi; \
 		echo ""; \
-		echo -e "$(YELLOW)⚠️  주의: CA 인증서 필요$(NC)"; \
-		if [ ! -f samsungsemi-prx.com.crt ]; then \
-			echo -e "$(RED)   ❌ samsungsemi-prx.com.crt 파일이 없습니다$(NC)"; \
-			echo -e "$(BLUE)   다음을 수행하세요:$(NC)"; \
-			echo -e "$(BLUE)   1. 회사 CA 인증서를 samsungsemi-prx.com.crt로 복사$(NC)"; \
-			echo -e "$(BLUE)   2. make up 실행$(NC)"; \
+		mkdir -p certs; \
+		echo -e "$(YELLOW)🔑 CA 인증서 필요 (필수)$(NC)"; \
+		if [ ! -f certs/corp-ca.crt ]; then \
+			echo -e "$(RED)   ❌ certs/corp-ca.crt 파일이 없습니다$(NC)"; \
+			echo ""; \
+			echo -e "$(BLUE)━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━$(NC)"; \
+			echo -e "$(BLUE)📥 CA 인증서 다운로드 방법$(NC)"; \
+			echo -e "$(BLUE)━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━$(NC)"; \
+			echo ""; \
+			echo -e "$(BLUE)1️⃣  다음 링크에서 다운로드:$(NC)"; \
+			echo -e "$(YELLOW)   http://12.53.3.52:5465/apc/AgentInstall/list_agent.htm$(NC)"; \
+			echo ""; \
+			echo -e "$(BLUE)2️⃣  파일명: samsungsemi-prx.com.crt$(NC)"; \
+			echo ""; \
+			echo -e "$(BLUE)3️⃣  다운로드 후 복사:$(NC)"; \
+			echo -e "$(YELLOW)   mkdir -p certs$(NC)"; \
+			echo -e "$(YELLOW)   cp ~/Downloads/samsungsemi-prx.com.crt certs/corp-ca.crt$(NC)"; \
+			echo ""; \
+			echo -e "$(BLUE)4️⃣  다시 실행:$(NC)"; \
+			echo -e "$(YELLOW)   make init$(NC)"; \
+			echo ""; \
+			echo -e "$(BLUE)📖 상세 가이드: docs/INTERNAL_SETUP.md$(NC)"; \
+			echo -e "$(BLUE)━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━$(NC)"; \
+			echo ""; \
 		else \
-			echo -e "$(GREEN)   ✅ samsungsemi-prx.com.crt 파일 확인됨$(NC)"; \
+			echo -e "$(GREEN)   ✅ certs/corp-ca.crt 파일 확인됨$(NC)"; \
 		fi; \
 	fi; \
 	echo ""; \
