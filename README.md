@@ -17,7 +17,7 @@ Unified Docker Compose stack to run **Ollama** (local LLM inference) + **LiteLLM
 - Docker & Docker Compose v2+
 - 8GB+ RAM recommended
 - (Optional) NVIDIA GPU for faster inference
-- **Internal PC Users**: CA 인증서(samsungsemi-prx.com.crt) 필요 → [상세 가이드](docs/INTERNAL_SETUP.md)
+- **Internal PC Users**: CA 인증서(samsungsemi-prx.com.crt) 필요 → `make init` 실행 시 안내
 
 ### 1. Clone & Initialize
 
@@ -36,7 +36,6 @@ make init
 🏢 Internal (회사 내부):   프록시, CA 인증서 필수
 ```
 
-> **Internal PC 사용자**: [docs/INTERNAL_SETUP.md](docs/INTERNAL_SETUP.md)에서 CA 인증서 다운로드 방법을 확인하세요.
 
 ### 2. Start Services
 
