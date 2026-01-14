@@ -2,5 +2,15 @@
 .venv/
 __pycache__/
 .mypy_cache/
-litellm_stack.egg-info/.env.local
+.env.local
 *.egg-info/
+
+# ═══════════════════════════════════════════════════
+# Environment-specific files (Enterprise PC only)
+# ═══════════════════════════════════════════════════
+
+# docker-compose override (Enterprise PC 환경에만 존재)
+docker-compose.override.yml
+
+# 회사 CA 인증서 (Enterprise PC에만 필요)
+samsungsemi-prx.com.crt

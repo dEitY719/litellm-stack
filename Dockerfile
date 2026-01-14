@@ -1,4 +1,29 @@
-FROM ghcr.io/berriai/litellm:main-v1.73.0-stable
+# ═══════════════════════════════════════════════════════════════════════════════
+# Dockerfile: 환경별 조건부 빌드 (Home/External vs Internal)
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# 빌드 방법:
+# - Home/External: docker build --build-arg BUILD_TYPE=home .
+# - Internal:      docker build --build-arg BUILD_TYPE=internal .
+#
+# docker-compose는 자동으로 적절한 BUILD_TYPE을 전달합니다.
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 빌드 인자 (기본값: home)
+# ─────────────────────────────────────────────────────────────────────────────
+ARG BUILD_TYPE=home
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Stage 1: 기본 이미지
+# ─────────────────────────────────────────────────────────────────────────────
+FROM ghcr.io/berriai/litellm:main-v1.73.0-stable as base
+LABEL build_type="${BUILD_TYPE}"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Stage 2: Internal 빌드 (CA 인증서 + SSL 검증 비활성화)
+# ─────────────────────────────────────────────────────────────────────────────
+FROM base as internal
 
 USER root
 
@@ -42,11 +67,14 @@ RUN mkdir -p /app/.cache/prisma-python && chown -R 1000:1000 /app
 RUN prisma --version || true
 
 # Python SSL 검증 비활성화 패치 (런타임용)
+# ⚠️ Internal 필수: 회사 프록시/방화벽 대응
+# (동료 검증 결과: CA 인증서만으로는 부족)
 RUN python3 - <<'PY'
 sitecustomize_content = '''
 import ssl
 
-# 개발 환경: SSL 검증 완전 비활성화
+# Internal 환경: SSL 검증 완전 비활성화
+# 회사 프록시/방화벽 대응 (동료 검증 완료)
 _original_create_default_context = ssl.create_default_context
 
 def _patched_create_default_context(purpose=ssl.Purpose.SERVER_AUTH, *, cafile=None, capath=None, cadata=None):
@@ -62,7 +90,21 @@ import site
 site_packages = site.getsitepackages()[0]
 with open(f"{site_packages}/sitecustomize.py", 'w') as f:
     f.write(sitecustomize_content)
-print("SSL verification disabled for development")
+print("SSL verification disabled for Enterprise environment")
 PY
+
+USER 1000
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Stage 3: Home/Public 빌드 (기본값, 추가 설정 없음)
+# ─────────────────────────────────────────────────────────────────────────────
+FROM base as home
+
+USER 1000
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Stage 4: 최종 이미지 선택 (BUILD_TYPE에 따라)
+# ─────────────────────────────────────────────────────────────────────────────
+FROM ${BUILD_TYPE} as final
 
 USER 1000

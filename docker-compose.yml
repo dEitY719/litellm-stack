@@ -86,25 +86,19 @@ services:
   # ═══════════════════════════════════════════════════
   litellm:
     container_name: litellm
-    user: "0:0"
-    build:
-      context: .
-      dockerfile: Dockerfile
-    restart: always
+    image: ghcr.io/berriai/litellm:main-v1.73.0-stable
+    user: "1000"
+    restart: unless-stopped
     volumes:
       - ./litellm_settings.yml:/app/config.yml
-      - litellm_cache:/app/.cache
     command:
       - "--config=config.yml"
     ports:
       - "4444:4000"
     environment:
-      HOME: /app
-      XDG_CACHE_HOME: /app/.cache
       DATABASE_URL: "postgresql://llmproxy:dbpassword9090@db:5432/litellm"
       STORE_MODEL_IN_DB: "True"
       LITELLM_MASTER_KEY: "sk-4444"
-      LITELLM_SSL_VERIFY: "False" # 개발 환경: SSL 인증서 검증 비활성화
     depends_on:
       db:
         condition: service_healthy

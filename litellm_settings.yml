@@ -62,12 +62,14 @@ general:
     success_callback: ["postgres"]
     failure_callback: ["postgres"]
 
-# 1. UI 로그 저장을 위한 설정 (Admin 페이지 가이드 내용)
+# UI 로그 저장 설정
 general_settings:
   store_model_in_db: true
   store_prompts_in_spend_logs: true
 
-# 2. (선택사항) 터미널에서도 보고 싶다면 유지, 아니면 삭제해도 됨
+# LiteLLM 로깅 설정
 litellm_settings:
   log_payload: true
-  ssl_verify: false  # 개발 환경: SSL 인증서 검증 비활성화
+  # ⚠️ ssl_verify는 환경변수로 제어 (docker-compose.override.yml에서 LITELLM_SSL_VERIFY 설정)
+  # Home/External PC: 환경변수 설정 없음 (기본값: True)
+  # Internal PC: LITELLM_SSL_VERIFY=False (프록시 대응)
