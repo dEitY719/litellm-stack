@@ -3,7 +3,9 @@ services:
   # Ollama: 로컬 LLM 추론 엔진 (통합)
   # ═══════════════════════════════════════════════════
   ollama:
-    image: ollama/ollama:latest
+    build:
+      context: .
+      dockerfile: Dockerfile.ollama
     container_name: ollama
     restart: unless-stopped
     ports:

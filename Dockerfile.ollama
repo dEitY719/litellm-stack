@@ -1,0 +1,29 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# Dockerfile.ollama: Ollama 커스텀 이미지 (CA 인증서 포함)
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# External/Internal 환경에서 회사 프록시를 통해 모델 다운로드하기 위해
+# samsungsemi-prx.com.crt CA 인증서를 포함합니다.
+# ═══════════════════════════════════════════════════════════════════════════════
+
+FROM ollama/ollama:latest
+
+USER root
+
+# 회사 CA 인증서 복사
+COPY ./samsungsemi-prx.com.crt /usr/local/share/ca-certificates/corp-ca.crt
+
+# CA 번들 생성: 시스템 기본 CA + 회사 CA
+RUN apt-get update && apt-get install -y ca-certificates && \
+    update-ca-certificates && \
+    apt-get clean && \
+    \
+    # 회사 CA를 시스템 CA 번들에 추가
+    cat /usr/local/share/ca-certificates/corp-ca.crt >> /etc/ssl/certs/ca-certificates.crt
+
+# Go 환경변수 설정 (Ollama는 Go로 작성됨)
+ENV SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt
+ENV SSL_CERT_DIR=/etc/ssl/certs
+
+# curl, wget 등 다른 도구들도 사용 가능하도록 설정
+ENV REQUESTS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt
