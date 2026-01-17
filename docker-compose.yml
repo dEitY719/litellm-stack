@@ -109,7 +109,7 @@ services:
       # DATABASE_URL 제거: Prisma 비활성화로 nodeenv SSL 오류 해결
       # Prisma는 DATABASE_URL이 없으면 자동으로 비활성화됨
       STORE_MODEL_IN_DB: "False"
-      LITELLM_MASTER_KEY: "sk-4444"
+      API_KEY: ${API_KEY}
     depends_on:
       db:
         condition: service_healthy
