@@ -61,7 +61,7 @@ model_list:
 
 general:
   debug: true
-  master_key: os.environ/API_KEY
+  master_key: sk-4444
   litellm_settings:
     success_callback: ["postgres"]
     failure_callback: ["postgres"]
